@@ -1,0 +1,15 @@
+country,iso_code,risk_zone,risk_score,flag_url,gdp_billion_usd,military_budget_billion_usd,active_personnel,combat_aircraft_count,relation_with_india,key_conflicts,geopolitical_stance,nuclear_capable,alliance
+India,IND,Medium,6.5,https://flagcdn.com/w320/ind.png,5157.52,177.62,1119963,208,Strategic Autonomy,Maritime disputes / regional security,Naval power projection,True,Quad
+USA,USA,Low,3.0,https://flagcdn.com/w320/usa.png,20619.78,888.47,1407180,310,Ally,Maritime disputes / regional security,Naval power projection,True,NATO
+China,CHN,High,8.5,https://flagcdn.com/w320/chn.png,13470.26,279.13,1892340,137,Competitor,Maritime disputes / regional security,Naval power projection,True,None
+Russia,RUS,Medium,6.0,https://flagcdn.com/w320/rus.png,6846.71,140.22,443178,105,Partner,Maritime disputes / regional security,Naval power projection,True,CSTO
+UK,GBR,Low,2.5,https://flagcdn.com/w320/gbr.png,8858.1,430.59,492452,281,Ally,Maritime disputes / regional security,Naval power projection,True,NATO
+France,FRA,Low,2.5,https://flagcdn.com/w320/fra.png,19403.16,946.99,823854,266,Ally,Maritime disputes / regional security,Naval power projection,True,NATO
+Japan,JPN,Low,3.5,https://flagcdn.com/w320/jpn.png,20113.36,977.71,320650,79,Strategic Partner,Maritime disputes / regional security,Naval power projection,False,US Alliance
+Australia,AUS,Low,3.0,https://flagcdn.com/w320/aus.png,15810.36,476.08,475471,106,Ally,Maritime disputes / regional security,Naval power projection,False,AUKUS
+Pakistan,PAK,High,8.0,https://flagcdn.com/w320/pak.png,17612.86,710.76,1728942,121,Adversary,Maritime disputes / regional security,Naval power projection,True,None
+North Korea,PRK,High,9.0,https://flagcdn.com/w320/prk.png,1924.09,72.27,1853809,262,Hostile,Maritime disputes / regional security,Naval power projection,True,None
+South Korea,KOR,Medium,4.5,https://flagcdn.com/w320/kor.png,1747.02,46.62,705220,243,Partner,Maritime disputes / regional security,Naval power projection,False,US Alliance
+Iran,IRN,High,7.5,https://flagcdn.com/w320/irn.png,19071.88,330.69,602930,113,Tense,Maritime disputes / regional security,Naval power projection,False,None
+Israel,ISR,Medium,5.0,https://flagcdn.com/w320/isr.png,2738.33,106.77,595892,139,Partner,Maritime disputes / regional security,Naval power projection,True,US Alliance
+Germany,DEU,Low,2.0,https://flagcdn.com/w320/deu.png,1401.85,61.76,370327,53,Ally,Maritime disputes / regional security,Naval power projection,False,NATO
