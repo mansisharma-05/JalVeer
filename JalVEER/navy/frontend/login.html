@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>JalVeer Defence Terminal</title>
+
+<style>
+
+body{
+margin:0;
+background:black;
+color:#00ff9c;
+font-family: "Courier New", monospace;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+overflow:hidden;
+}
+.footer{
+position:fixed;
+bottom:0;
+width:100%;
+text-align:center;
+padding:10px;
+background:rgba(0,0,0,0.7);
+color:#00e5ff;
+font-size:14px;
+letter-spacing:1px;
+border-top:1px solid #00e5ff33;
+font-family:'Share Tech Mono', monospace;
+}
+/* radar background */
+
+body::before{
+content:"";
+position:absolute;
+width:100%;
+height:100%;
+background:url("https://i.pinimg.com/originals/4e/a7/5d/4ea75dbde2c93e514a14d655b7823b76.gif");
+background-size:cover;
+opacity:0.85;
+z-index:-1;
+}
+
+.terminal{
+
+border:2px solid #00ff9c;
+padding:40px;
+width:420px;
+background:rgba(0,0,0,0.85);
+box-shadow:0 0 25px #00ff9c;
+}
+
+h1{
+text-align:center;
+margin-bottom:10px;
+}
+
+.subtitle{
+text-align:center;
+margin-bottom:30px;
+color:#00ffaa;
+}
+
+label{
+display:block;
+margin-top:15px;
+}
+
+input{
+width:100%;
+background:black;
+border:1px solid #00ff9c;
+color:#00ff9c;
+padding:10px;
+margin-top:5px;
+font-family:monospace;
+}
+
+button{
+width:100%;
+margin-top:25px;
+padding:12px;
+background:#00ff9c;
+border:none;
+color:black;
+font-weight:bold;
+cursor:pointer;
+}
+
+#terminalText{
+height:80px;
+margin-top:20px;
+font-size:14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="terminal">
+
+<h1>⚓ JALVEER DEFENCE TERMINAL</h1>
+<div class="subtitle">ACCESS LEVEL REQUIRED</div>
+
+<label>USERNAME</label>
+<input id="user">
+
+<label>PASSWORD</label>
+<input type="password" id="pass">
+
+<button onclick="authenticate()">AUTHENTICATE</button>
+
+<div id="terminalText"></div>
+
+</div>
+
+<script>
+
+function typeEffect(text){
+
+let element=document.getElementById("terminalText")
+element.innerHTML=""
+
+let i=0
+
+let interval=setInterval(function(){
+
+element.innerHTML+=text[i]
+i++
+
+if(i>=text.length){
+clearInterval(interval)
+}
+
+},30)
+
+}
+
+function authenticate(){
+
+let u=document.getElementById("user").value
+let p=document.getElementById("pass").value
+
+typeEffect("Authenticating credentials...")
+
+setTimeout(()=>{
+
+if(u==="admin" && p==="1234"){
+
+typeEffect("ACCESS GRANTED ✔ Launching JalVeer System...")
+
+localStorage.setItem("loggedIn","true")
+
+setTimeout(()=>{
+window.location.href="index.html"
+},2000)
+
+}else{
+
+typeEffect("ACCESS DENIED ❌ Unauthorized user")
+
+}
+
+},1500)
+
+}
+
+</script>
+<footer class="footer">
+⚓ Developed by Mansi Sharma & Ashmeet Singh
+</footer>
+</body>
+</html>

@@ -1,0 +1,613 @@
+
+<style>
+if(localStorage.getItem("loggedIn")!=="true"){
+window.location.href="terminal_login.html"
+}
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --hud:#00e5ff;--hud2:#ff6b35;--green:#00ff88;--red:#ff3b3b;--amber:#ffbb00;
+  --panel:rgba(2,12,28,0.82);--border:rgba(0,229,255,0.18);--text:#c8e8f0;--dim:rgba(0,229,255,0.5);
+}
+body{font-family:'Rajdhani',sans-serif;color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* BACKGROUND */
+#bg{position:fixed;inset:0;z-index:0;background:#030d1a;transition:background 0.8s}
+#bg-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.2s,background-image 0.8s}
+
+#bg-scan{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+#bg-scan::after{content:'';position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,229,255,0.08),transparent);animation:scanY 8s linear infinite}
+@keyframes scanY{0%{top:-2px}100%{top:100%}}
+
+.app{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:14px}
+
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--panel);border:0.5px solid var(--border);border-radius:8px;margin-bottom:12px;backdrop-filter:blur(8px)}
+.hdr-logo{font-size:22px;font-weight:700;letter-spacing:3px;color:var(--hud);text-transform:uppercase}
+.hdr-sub{font-size:10px;letter-spacing:2px;color:var(--dim);font-family:'Share Tech Mono',monospace}
+.live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s ease-in-out infinite;display:inline-block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+
+/* NAV */
+.nav{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.nb{padding:6px 14px;font-size:10px;letter-spacing:2px;font-family:'Share Tech Mono',monospace;text-transform:uppercase;background:transparent;border:0.5px solid rgba(0,229,255,0.2);color:var(--dim);border-radius:4px;cursor:pointer;transition:all 0.2s}
+.nb.on{background:rgba(0,229,255,0.1);border-color:var(--hud);color:var(--hud)}
+.nb:hover{border-color:var(--hud);color:var(--hud)}
+
+/* COUNTRY SWITCHER */
+.country-switcher{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.cs-btn{display:flex;align-items:center;gap:8px;padding:7px 14px;background:var(--panel);border:0.5px solid var(--border);border-radius:6px;cursor:pointer;transition:all 0.25s;backdrop-filter:blur(8px);font-family:'Rajdhani',sans-serif}
+.cs-btn:hover{border-color:var(--hud)}
+.cs-btn.on{border-color:var(--hud);background:rgba(0,229,255,0.08);box-shadow:0 0 16px rgba(0,229,255,0.08)}
+.cs-flag{width:28px;height:20px;border-radius:3px;object-fit:cover;flex-shrink:0}
+.cs-name{font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text)}
+.cs-type{font-size:9px;color:var(--dim);font-family:'Share Tech Mono',monospace}
+
+/* PANEL */
+.panel{background:var(--panel);border:0.5px solid var(--border);border-radius:8px;padding:14px;position:relative;overflow:hidden;backdrop-filter:blur(8px);animation:fadeIn 0.4s ease forwards}
+.panel::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(0,229,255,0.012) 28px,rgba(0,229,255,0.012) 29px);pointer-events:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ptitle{font-size:10px;letter-spacing:3px;color:var(--hud);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:7px;font-family:'Share Tech Mono',monospace}
+.ptitle::before{content:'';display:block;width:3px;height:11px;background:var(--hud);border-radius:2px;flex-shrink:0}
+
+/* SHIP CARDS */
+.fleet-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start;margin-bottom:14px}
+.ship-card{background:linear-gradient(180deg,rgba(0,229,255,0.03) 0%,rgba(0,10,24,0.6) 100%);border:0.5px solid var(--border);border-radius:8px;padding:12px;text-align:center;position:relative;overflow:hidden;transition:border-color 0.3s}
+.ship-card.india-card{border-color:rgba(255,153,51,0.35)}
+.ship-card.pak-card{border-color:rgba(0,204,102,0.35)}
+.ship-img-wrap{width:100%;height:140px;border-radius:6px;overflow:hidden;margin-bottom:10px;position:relative;background:#0a1525}
+.ship-img{width:100%;height:100%;object-fit:cover;transition:transform 0.5s,opacity 0.6s}
+.ship-img:hover{transform:scale(1.05)}
+.ship-img-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;background:rgba(0,229,255,0.04)}
+.ship-name{font-size:16px;font-weight:700;letter-spacing:1px;margin-bottom:2px}
+.ind-color{color:#ff9933}.pak-color{color:#00cc66}.usa-color{color:#4488ff}.chn-color{color:#ff4444}.rus-color{color:#ff8844}
+.ship-class{font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:6px;font-family:'Share Tech Mono',monospace}
+.score-big{font-size:28px;font-weight:700;font-family:'Share Tech Mono',monospace;padding:4px 12px;border-radius:5px;display:inline-block;margin-bottom:4px}
+.score-india{color:#ff9933;background:rgba(255,153,51,0.1);border:0.5px solid rgba(255,153,51,0.3)}
+.score-pak{color:#00cc66;background:rgba(0,204,102,0.1);border:0.5px solid rgba(0,204,102,0.3)}
+.score-usa{color:#4488ff;background:rgba(68,136,255,0.1);border:0.5px solid rgba(68,136,255,0.3)}
+.score-chn{color:#ff4444;background:rgba(255,68,68,0.1);border:0.5px solid rgba(255,68,68,0.3)}
+.score-rus{color:#ff8844;background:rgba(255,136,68,0.1);border:0.5px solid rgba(255,136,68,0.3)}
+
+.vs-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px 0}
+.vs-txt{font-size:30px;font-weight:700;color:var(--hud);letter-spacing:2px}
+.vs-orb{width:56px;height:56px;border-radius:50%;border:1.5px solid rgba(0,229,255,0.3);display:flex;align-items:center;justify-content:center;animation:pulse 2.5s ease-in-out infinite;background:rgba(0,229,255,0.05)}
+
+/* STAT ROWS */
+.stat-r{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid rgba(0,229,255,0.07);font-size:12px}
+.stat-k{color:var(--dim);letter-spacing:1px;font-size:10px;text-align:center;flex:1}
+.sv{font-family:'Share Tech Mono',monospace;font-weight:600;font-size:12px;flex:1;text-align:left}
+.sv2{font-family:'Share Tech Mono',monospace;font-weight:600;font-size:12px;flex:1;text-align:right}
+
+/* WIN GAUGE */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0 4px}
+@keyframes gaugeFill{from{stroke-dashoffset:220}to{stroke-dashoffset:var(--off)}}
+.gfill{fill:none;stroke-width:13;stroke-linecap:round;stroke-dasharray:220;stroke-dashoffset:220;--off:55;animation:gaugeFill 1.6s cubic-bezier(.4,0,.2,1) 0.5s forwards}
+.win-lbl{font-size:15px;font-weight:700;letter-spacing:3px;text-align:center;margin-top:6px;animation:pulse 3s ease-in-out infinite}
+@keyframes barIn{from{width:0}to{width:var(--w)}}
+.mbar{height:5px;border-radius:3px;background:rgba(255,255,255,0.07);overflow:hidden;flex:1}
+.mfill{height:100%;border-radius:3px;width:0;animation:barIn 1.4s ease forwards}
+
+/* GRID LAYOUTS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+
+/* LOG */
+.log-e{font-size:10px;font-family:'Share Tech Mono',monospace;padding:3px 0;border-bottom:0.5px solid rgba(0,229,255,0.05);color:var(--dim)}
+.log-t{color:var(--hud);margin-right:6px}
+.log-w{color:var(--green);font-weight:700}
+
+/* TICKER */
+.ticker{background:rgba(0,229,255,0.04);border:0.5px solid rgba(0,229,255,0.1);border-radius:4px;padding:5px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);overflow:hidden;white-space:nowrap;margin-bottom:12px}
+.ticker span{display:inline-block;animation:tick 35s linear infinite}
+@keyframes tick{0%{transform:translateX(100%)}100%{transform:translateX(-200%)}}
+
+.sbtn{width:100%;padding:9px;font-size:10px;letter-spacing:3px;font-family:'Share Tech Mono',monospace;text-transform:uppercase;background:rgba(0,229,255,0.06);border:0.5px solid var(--hud);color:var(--hud);border-radius:4px;cursor:pointer;transition:all 0.2s;margin-top:10px}
+.sbtn:hover{background:rgba(0,229,255,0.14)}
+.hidden{display:none}
+</style>
+
+<!-- BACKGROUND LAYERS -->
+<div id="bg">
+  <div id="bg-img"></div>
+  <div id="bg-overlay"></div>
+  <div id="bg-grid"></div>
+  <div id="bg-scan"></div>
+</div>
+
+<div class="app">
+  <!-- Header -->
+  <div class="hdr">
+    <div>
+      <div class="hdr-logo">⚓ JalVeer</div>
+      <div class="hdr-sub">Naval Defence Intelligence System v2.4</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:10px;color:var(--dim);font-family:'Share Tech Mono',monospace;letter-spacing:2px">ACTIVE THEATRE</div>
+      <div id="theatre-lbl" style="font-size:15px;font-weight:700;color:var(--hud);letter-spacing:2px">INDO-PACIFIC</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--dim);font-family:'Share Tech Mono',monospace">
+      <div class="live-dot"></div>
+      <div><div>SYSTEM ONLINE</div><div id="clk" style="color:var(--text)">--:--:--</div></div>
+    </div>
+  </div>
+
+  <!-- Ticker -->
+  <div class="ticker"><span id="ticker-text">◈ THREAT LEVEL: ELEVATED &nbsp;&nbsp;&nbsp; ◈ INS KOLKATA SCORE: 84 vs PNS KHALID: 66 — INDIA WINS 72% &nbsp;&nbsp;&nbsp; ◈ ML MODEL ACCURACY: 94.2% &nbsp;&nbsp;&nbsp; ◈ GEOPOLITICAL ZONES: 14 REGIONS ASSESSED &nbsp;&nbsp;&nbsp;</span></div>
+
+  <!-- Nav -->
+  <div class="nav">
+    <button class="nb on" onclick="showTab('battle')">Battle Sim</button>
+    <button class="nb" onclick="showTab('tech')">Tech Class</button>
+    <button class="nb" onclick="showTab('risk')">Geo Risk</button>
+  </div>
+
+  <!-- BATTLE SIM TAB -->
+  <div id="tab-battle">
+
+    <!-- Country Switcher -->
+    <div style="margin-bottom:10px">
+      <div style="font-size:10px;color:var(--dim);letter-spacing:2px;font-family:'Share Tech Mono',monospace;margin-bottom:8px">◈ SELECT MATCHUP</div>
+      <div class="country-switcher" id="matchup-btns"></div>
+    </div>
+
+    <!-- Ship Cards -->
+    <div class="fleet-grid" id="fleet-grid">
+      <!-- injected by JS -->
+    </div>
+
+    <!-- Stats + Gauge -->
+    <div class="g2">
+      <div class="panel">
+        <div class="ptitle">Vessel Specifications</div>
+        <div id="stat-table"></div>
+      </div>
+      <div class="panel">
+        <div class="ptitle">Battle Outcome</div>
+        <div class="gauge-wrap">
+          <svg width="170" height="150" viewBox="0 0 170 150" style="overflow:visible">
+            <defs>
+              <linearGradient id="gg" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ff6b35"/><stop offset="50%" stop-color="#ffbb00"/><stop offset="100%" stop-color="#00ff88"/>
+              </linearGradient>
+            </defs>
+            <path fill="none" stroke="rgba(0,229,255,0.1)" stroke-width="13" stroke-linecap="round" d="M20,125 A75,75 0 1,1 150,125"/>
+            <path id="gp" class="gfill" stroke="url(#gg)" d="M20,125 A75,75 0 1,1 150,125"/>
+            <text id="gpct" font-size="32" font-weight="700" fill="#00e5ff" font-family="Rajdhani,sans-serif" text-anchor="middle" x="85" y="105">72%</text>
+            <text font-size="10" fill="rgba(0,229,255,0.5)" font-family="Share Tech Mono,monospace" text-anchor="middle" x="85" y="130" letter-spacing="2">WIN PROBABILITY</text>
+          </svg>
+          <div class="win-lbl" id="win-lbl" style="color:var(--green)">◈ INDIA VICTORIOUS ◈</div>
+          <div id="win-desc" style="font-size:11px;color:var(--dim);text-align:center;margin-top:6px;line-height:1.6"></div>
+        </div>
+        <div style="margin-top:10px" id="metric-bars"></div>
+        <div style="margin-top:10px;border-top:0.5px solid var(--border);padding-top:8px" id="sim-log"></div>
+        <button class="sbtn" onclick="runSim()">▶ Run New Simulation</button>
+      </div>
+    </div>
+
+    <!-- Radar Chart -->
+    <div class="panel">
+      <div class="ptitle">Multi-Dimensional Combat Analysis</div>
+      <div style="position:relative;height:240px"><canvas id="radarC"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TECH TAB -->
+  <div id="tab-tech" class="hidden">
+    <div class="g3">
+      <div class="panel" id="tech-a-panel"></div>
+      <div class="panel" id="tech-b-panel"></div>
+      <div class="panel">
+        <div class="ptitle">ML Model Stats</div>
+        <div style="text-align:center;padding:16px 0">
+          <div style="font-size:38px;font-weight:700;color:var(--green);font-family:'Share Tech Mono',monospace">94.2%</div>
+          <div style="font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:14px">MODEL ACCURACY</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:rgba(0,255,136,0.07);border:0.5px solid rgba(0,255,136,0.2);border-radius:6px;padding:10px">
+              <div style="font-size:20px;font-weight:700;color:var(--green);font-family:'Share Tech Mono',monospace">73</div>
+              <div style="font-size:9px;color:var(--dim);letter-spacing:1px">MODERN SYS</div>
+            </div>
+            <div style="background:rgba(255,187,0,0.07);border:0.5px solid rgba(255,187,0,0.2);border-radius:6px;padding:10px">
+              <div style="font-size:20px;font-weight:700;color:var(--amber);font-family:'Share Tech Mono',monospace">89</div>
+              <div style="font-size:9px;color:var(--dim);letter-spacing:1px">LEGACY SYS</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:10px;color:var(--dim);line-height:1.9;font-family:'Share Tech Mono',monospace">
+            Features: 12 | Training: Synthetic<br>Classifier: Random Forest + SVM<br>Last Updated: Today 08:42 IST
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel"><div class="ptitle">Tech Score Comparison</div><div style="position:relative;height:200px"><canvas id="techC"></canvas></div></div>
+  </div>
+
+  <!-- RISK TAB -->
+  <div id="tab-risk" class="hidden">
+    <div class="g3" style="margin-bottom:12px">
+      <div style="background:rgba(255,59,59,0.07);border:0.5px solid rgba(255,59,59,0.25);border-radius:8px;padding:14px;text-align:center">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--red);margin:0 auto 8px;box-shadow:0 0 10px var(--red)"></div>
+        <div style="font-size:12px;font-weight:700;color:var(--red);letter-spacing:2px;margin-bottom:4px">RED ZONE</div>
+        <div style="font-size:28px;font-weight:700;color:var(--red);font-family:'Share Tech Mono',monospace">4</div>
+        <div style="font-size:9px;color:rgba(255,59,59,0.6);letter-spacing:1px;margin-bottom:8px">HIGH THREAT</div>
+        <div style="font-size:10px;color:var(--dim);line-height:1.9;font-family:'Share Tech Mono',monospace">Pakistan<br>North Korea<br>Iran<br>Myanmar</div>
+      </div>
+      <div style="background:rgba(255,187,0,0.07);border:0.5px solid rgba(255,187,0,0.25);border-radius:8px;padding:14px;text-align:center">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--amber);margin:0 auto 8px;box-shadow:0 0 10px var(--amber)"></div>
+        <div style="font-size:12px;font-weight:700;color:var(--amber);letter-spacing:2px;margin-bottom:4px">YELLOW ZONE</div>
+        <div style="font-size:28px;font-weight:700;color:var(--amber);font-family:'Share Tech Mono',monospace">6</div>
+        <div style="font-size:9px;color:rgba(255,187,0,0.6);letter-spacing:1px;margin-bottom:8px">MEDIUM RISK</div>
+        <div style="font-size:10px;color:var(--dim);line-height:1.9;font-family:'Share Tech Mono',monospace">China<br>Bangladesh<br>Sri Lanka<br>Afghanistan<br>Nepal<br>Maldives</div>
+      </div>
+      <div style="background:rgba(0,255,136,0.07);border:0.5px solid rgba(0,255,136,0.25);border-radius:8px;padding:14px;text-align:center">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--green);margin:0 auto 8px;box-shadow:0 0 10px var(--green)"></div>
+        <div style="font-size:12px;font-weight:700;color:var(--green);letter-spacing:2px;margin-bottom:4px">GREEN ZONE</div>
+        <div style="font-size:28px;font-weight:700;color:var(--green);font-family:'Share Tech Mono',monospace">4</div>
+        <div style="font-size:9px;color:rgba(0,255,136,0.6);letter-spacing:1px;margin-bottom:8px">LOW RISK</div>
+        <div style="font-size:10px;color:var(--dim);line-height:1.9;font-family:'Share Tech Mono',monospace">USA<br>France<br>Australia<br>Japan</div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="panel"><div class="ptitle">Risk Score by Country</div><div style="position:relative;height:260px"><canvas id="riskC"></canvas></div></div>
+      <div class="panel"><div class="ptitle">Threat Matrix</div><div id="risk-table"></div></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ─── DATA ───────────────────────────────────────────────────────
+const MATCHUPS = [
+  {
+    id:'ind-pak', label:'India vs Pakistan', theatre:'INDO-PACIFIC',
+    bg:'https://media.licdn.com/dms/image/v2/C5612AQFX0gobQfzkjQ/article-cover_image-shrink_600_2000/article-cover_image-shrink_600_2000/0/1589754081329?e=2147483647&v=beta&t=Pr87IJL8ngg9tCn0Gt4ijmn7e2UNrFgWiM6t_2k1mEo',
+    
+    a:{
+      country:'India', flag:'🇮🇳', color:'#ff9933', scoreClass:'score-india', cardClass:'india-card', colorClass:'ind-color',
+      ship:'INS Kolkata', cls:'Kolkata-class Destroyer', score:84,
+      img:'https://upload.wikimedia.org/wikipedia/commons/4/45/INS_Tarkash_arriving_in_Port_Gentil%2C_Gabon%2C_the_first_ever_visit_to_Gabon_by_an_Indian_Navy_ship.jpg?_=20221216101335',
+      specs:{Displacement:'7500 T',Propulsion:'Gas Turbine','Missile Range':'1200 km','Air Defense':'150 km',Radar:'AESA',Sonar:'Towed Array'},
+      metrics:{Firepower:93,Detection:99,Stealth:83,'Air Def':87,Speed:78,'EW Sys':85}
+    },
+    b:{
+      country:'Pakistan', flag:'🇵🇰', color:'#00cc66', scoreClass:'score-pak', cardClass:'pak-card', colorClass:'pak-color',
+      ship:'PNS Khalid', cls:'Agosta-class Submarine', score:66,
+      img:'https://en.sauvees.com/wp-content/uploads/2025/03/pakistan-navy-ship.jpg',
+      specs:{Displacement:'3200 T',Propulsion:'Diesel-Electric','Missile Range':'800 km','Air Defense':'75 km',Radar:'Conventional',Sonar:'Passive'},
+      metrics:{Firepower:72,Detection:70,Stealth:60,'Air Def':65,Speed:68,'EW Sys':55}
+    },
+    winPct:72, winner:'INDIA VICTORIOUS',
+    desc:"India's Destroyer outmatches Pakistan's Submarine with superior missile & radar capabilities"
+  },
+  {
+    id:'ind-chn', label:'India vs China', theatre:'SOUTH CHINA SEA',
+    bg:'https://i.pinimg.com/originals/5e/c4/66/5ec46653317039c1ae74d71496f30a10.gif',
+    bgFallback:'linear-gradient(135deg,#041a2e 0%,#1a0a0a 100%)',
+    a:{
+      country:'India', flag:'🇮🇳', color:'#ff9933', scoreClass:'score-india', cardClass:'india-card', colorClass:'ind-color',
+      ship:'INS Vikramaditya', cls:'Kiev-class Aircraft Carrier', score:88,
+      img:'https://upload.wikimedia.org/wikipedia/commons/4/45/INS_Tarkash_arriving_in_Port_Gentil%2C_Gabon%2C_the_first_ever_visit_to_Gabon_by_an_Indian_Navy_ship.jpg?_=20221216101335',
+      specs:{Displacement:'45 500 T',Propulsion:'Steam Turbine','Aircraft':'26 MiG-29K','Air Defense':'200 km',Radar:'MF-STAR',Sonar:'Active Array'},
+      metrics:{Firepower:88,Detection:92,Stealth:60,'Air Def':91,Speed:72,'EW Sys':88}
+    },
+    b:{
+      country:'China', flag:'🇨🇳', color:'#ff4444', scoreClass:'score-chn', cardClass:'pak-card', colorClass:'chn-color',
+      ship:'CNS Nanchang', cls:'Type 055 Destroyer', score:91,
+      img:'https://www.globaltimes.cn/Portals/0/attachment/2025/2025-05-19/d3257544-12b6-401f-ab9a-256fa1c7753e.png',
+      specs:{Displacement:'12 000 T',Propulsion:'Gas Turbine','Missile Range':'1500 km','Air Defense':'250 km',Radar:'AESA Dual-Band',Sonar:'CAPTAS-4'},
+      metrics:{Firepower:91,Detection:95,Stealth:78,'Air Def':94,Speed:82,'EW Sys':91}
+    },
+    winPct:41, winner:'CHINA ADVANTAGE',
+    desc:"China's Type 055 edges out with superior displacement, missile range & dual-band AESA radar"
+  },
+  {
+    id:'ind-usa', label:'India vs USA', theatre:'ARABIAN SEA',
+    bg:'https://giffiles.alphacoders.com/151/151206.gif',
+    bgFallback:'linear-gradient(135deg,#041a2e 0%,#0a0a2a 100%)',
+    a:{
+      country:'India', flag:'🇮🇳', color:'#ff9933', scoreClass:'score-india', cardClass:'india-card', colorClass:'ind-color',
+      ship:'INS Chennai', cls:'Kolkata-class Destroyer', score:82,
+      img:'https://upload.wikimedia.org/wikipedia/commons/4/45/INS_Tarkash_arriving_in_Port_Gentil%2C_Gabon%2C_the_first_ever_visit_to_Gabon_by_an_Indian_Navy_ship.jpg?_=20221216101335',
+      specs:{Displacement:'7500 T',Propulsion:'Gas Turbine','Missile Range':'1200 km','Air Defense':'150 km',Radar:'AESA MF-STAR',Sonar:'Towed Array'},
+      metrics:{Firepower:82,Detection:88,Stealth:80,'Air Def':84,Speed:76,'EW Sys':82}
+    },
+    b:{
+      country:'USA', flag:'🇺🇸', color:'#4488ff', scoreClass:'score-usa', cardClass:'pak-card', colorClass:'usa-color',
+      ship:'USS Arleigh Burke', cls:'DDG-51 Class Destroyer', score:96,
+      img:'https://nationalinterest.org/wp-content/uploads/2026/02/damen-lst-100-illustration-021926-damen.png',
+      specs:{Displacement:'9 200 T',Propulsion:'Gas Turbine','Missile Range':'1700 km','Air Defense':'320 km',Radar:'AN/SPY-1D Aegis',Sonar:'AN/SQS-53C'},
+      metrics:{Firepower:96,Detection:98,Stealth:82,'Air Def':97,Speed:84,'EW Sys':96}
+    },
+    winPct:28, winner:'USA DOMINANT',
+    desc:"USS Arleigh Burke's Aegis combat system and 320 km air defense creates overwhelming advantage"
+  },
+  {
+    id:'pak-usa', label:'Pakistan vs USA', theatre:'NORTH ARABIAN SEA',
+    bg:'https://i.makeagif.com/media/4-11-2018/i4ETk6.gif',
+    bgFallback:'linear-gradient(135deg,#041a2e 0%,#0a0a1a 100%)',
+    a:{
+      country:'Pakistan', flag:'🇵🇰', color:'#00cc66', scoreClass:'score-pak', cardClass:'india-card', colorClass:'pak-color',
+      ship:'PNS Babur', cls:'Broadsword-class Destroyer', score:62,
+      img:'https://en.sauvees.com/wp-content/uploads/2025/03/pakistan-navy-ship.jpg',
+      specs:{Displacement:'4200 T',Propulsion:'Steam Turbine','Missile Range':'850 km','Air Defense':'80 km',Radar:'AWS-9',Sonar:'Passive Hull'},
+      metrics:{Firepower:62,Detection:65,Stealth:55,'Air Def':60,Speed:64,'EW Sys':52}
+    },
+    b:{
+      country:'USA', flag:'🇺🇸', color:'#4488ff', scoreClass:'score-usa', cardClass:'pak-card', colorClass:'usa-color',
+      ship:'USS Gerald R. Ford', cls:'Gerald R. Ford Class Carrier', score:99,
+      img:'https://nationalinterest.org/wp-content/uploads/2026/02/damen-lst-100-illustration-021926-damen.png',
+      specs:{Displacement:'100 000 T',Propulsion:'Nuclear','Aircraft':'90+ F-18','Air Defense':'450 km',Radar:'AN/SPY-3 MFR',Sonar:'AN/SQQ-90'},
+      metrics:{Firepower:99,Detection:99,Stealth:72,'Air Def':99,Speed:78,'EW Sys':99}
+    },
+    winPct:4, winner:'USA DOMINANT',
+    desc:"USS Gerald R. Ford is the world's largest warship — overwhelming nuclear-powered superiority"
+  }
+];
+
+let currentMatchup = MATCHUPS[0];
+let radarChart = null, techChart = null, riskChart = null;
+
+// ─── BACKGROUND ──────────────────────────────────────────────────
+function setBg(matchup) {
+  const imgDiv = document.getElementById('bg-img');
+  const img = new Image();
+  img.onload = () => {
+    imgDiv.style.backgroundImage = `url('${matchup.bg}')`;
+    imgDiv.style.opacity = '1';
+  };
+  img.onerror = () => {
+    imgDiv.style.backgroundImage = matchup.bgFallback;
+    imgDiv.style.opacity = '1';
+  };
+  img.src = matchup.bg;
+  document.getElementById('theatre-lbl').textContent = matchup.theatre;
+}
+
+// ─── MATCHUP BUTTONS ─────────────────────────────────────────────
+function renderMatchupBtns() {
+  const c = document.getElementById('matchup-btns');
+  c.innerHTML = MATCHUPS.map((m,i) => `
+    <button class="cs-btn${i===0?' on':''}" onclick="selectMatchup(${i})" id="mbtn-${i}">
+      <span style="font-size:18px">${m.a.flag}</span>
+      <div><div class="cs-name">${m.label}</div><div class="cs-type">${m.theatre}</div></div>
+      <span style="font-size:18px">${m.b.flag}</span>
+    </button>`).join('');
+}
+
+function selectMatchup(idx) {
+  currentMatchup = MATCHUPS[idx];
+  document.querySelectorAll('.cs-btn').forEach((b,i) => b.classList.toggle('on', i===idx));
+  setBg(currentMatchup);
+  renderFleet();
+  renderStats();
+  renderGauge();
+  renderMetrics();
+  renderLog();
+  renderRadar();
+  renderTech();
+}
+
+// ─── SHIP IMAGE WITH FALLBACK ─────────────────────────────────────
+function shipImgHtml(ship, side) {
+  return `<div class="ship-img-wrap" id="img-wrap-${side}">
+    <img src="${ship.img}" class="ship-img" alt="${ship.ship}"
+      onerror="this.style.display='none';document.getElementById('img-wrap-${side}').innerHTML='<div class=\\'ship-img-fallback\\'>🚢</div>'"
+      style="opacity:0;transition:opacity 0.6s"
+      onload="this.style.opacity='1'">
+  </div>`;
+}
+
+// ─── FLEET CARDS ────────────────────────────────────────────────
+function renderFleet() {
+  const {a,b,winPct,winner} = currentMatchup;
+  const wColor = winPct >= 50 ? a.color : b.color;
+  document.getElementById('fleet-grid').innerHTML = `
+    <div class="ship-card ${a.cardClass}">
+      <div style="position:absolute;top:8px;left:8px;font-size:22px">${a.flag}</div>
+      ${shipImgHtml(a,'a')}
+      <div class="ship-name ${a.colorClass}">${a.ship}</div>
+      <div class="ship-class">${a.cls}</div>
+      <div class="score-big ${a.scoreClass}">${a.score}</div>
+      <div style="font-size:9px;color:var(--dim);letter-spacing:1px;font-family:'Share Tech Mono',monospace">${a.country.toUpperCase()} NAVY</div>
+    </div>
+    <div class="vs-mid">
+      <div class="vs-orb"><span class="vs-txt">VS</span></div>
+      <div style="font-size:9px;color:var(--dim);letter-spacing:2px;font-family:'Share Tech Mono',monospace;text-align:center;margin-top:4px">SIMULATION<br>ACTIVE</div>
+    </div>
+    <div class="ship-card ${b.cardClass}">
+      <div style="position:absolute;top:8px;right:8px;font-size:22px">${b.flag}</div>
+      ${shipImgHtml(b,'b')}
+      <div class="ship-name ${b.colorClass}">${b.ship}</div>
+      <div class="ship-class">${b.cls}</div>
+      <div class="score-big ${b.scoreClass}">${b.score}</div>
+      <div style="font-size:9px;color:var(--dim);letter-spacing:1px;font-family:'Share Tech Mono',monospace">${b.country.toUpperCase()} NAVY</div>
+    </div>`;
+}
+
+// ─── STAT TABLE ─────────────────────────────────────────────────
+function renderStats() {
+  const {a,b} = currentMatchup;
+  const keys = Object.keys(a.specs);
+  document.getElementById('stat-table').innerHTML = keys.map(k => `
+    <div class="stat-r">
+      <span class="sv" style="color:${a.color}">${a.specs[k]}</span>
+      <span class="stat-k">${k.toUpperCase()}</span>
+      <span class="sv2" style="color:${b.color}">${b.specs[k]}</span>
+    </div>`).join('');
+}
+
+// ─── GAUGE ──────────────────────────────────────────────────────
+function renderGauge() {
+  const {a,b,winPct,winner,desc} = currentMatchup;
+  const off = 220 * (1 - winPct/100);
+  const gp = document.getElementById('gp');
+  gp.style.animation = 'none';
+  gp.style.strokeDashoffset = 220;
+  setTimeout(() => {
+    gp.style.setProperty('--off', off);
+    gp.style.animation = 'gaugeFill 1.6s cubic-bezier(.4,0,.2,1) forwards';
+  }, 50);
+  document.getElementById('gpct').textContent = winPct + '%';
+  const wColor = winPct >= 50 ? a.color : b.color;
+  const wl = document.getElementById('win-lbl');
+  wl.textContent = '◈ ' + winner + ' ◈';
+  wl.style.color = wColor;
+  document.getElementById('win-desc').textContent = desc;
+}
+
+// ─── METRICS ────────────────────────────────────────────────────
+function renderMetrics() {
+  const {a,b} = currentMatchup;
+  const keys = Object.keys(a.metrics);
+  document.getElementById('metric-bars').innerHTML = keys.map(k => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="font-size:9px;color:var(--dim);width:56px;letter-spacing:1px;font-family:'Share Tech Mono',monospace">${k}</div>
+      <div class="mbar"><div class="mfill" style="--w:${a.metrics[k]}%;background:linear-gradient(90deg,${a.color}88,${a.color})"></div></div>
+      <div style="font-size:9px;font-family:'Share Tech Mono',monospace;color:${a.color};width:24px">${a.metrics[k]}%</div>
+    </div>`).join('');
+}
+
+// ─── LOG ────────────────────────────────────────────────────────
+function renderLog(extra) {
+  const now = new Date().toTimeString().split(' ')[0];
+  const {winner,winPct,a,b} = currentMatchup;
+  const wColor = winPct >= 50 ? a.color : b.color;
+  document.getElementById('sim-log').innerHTML = `
+    <div class="log-e"><span class="log-t">[${now}]</span> Engagement Simulation Initiated...</div>
+    <div class="log-e"><span class="log-t">[${now}]</span> Analysing Combat Parameters...</div>
+    <div class="log-e"><span class="log-t">[${now}]</span> WINNER: <span class="log-w" style="color:${wColor}">${winner} (${winPct}%)</span></div>
+    ${extra ? `<div class="log-e"><span class="log-t">[${now}]</span><span style="color:${wColor}"> ${extra}</span></div>` : ''}`;
+}
+
+// ─── RUN SIM ────────────────────────────────────────────────────
+let simTurn = 0;
+function runSim() {
+  simTurn++;
+  const delta = (simTurn % 2 === 0) ? 5 : -5;
+  const {winPct} = currentMatchup;
+  const newPct = Math.max(5, Math.min(95, winPct + delta));
+  currentMatchup = {...currentMatchup, winPct: newPct};
+  renderGauge();
+  renderLog('Simulation parameters updated');
+}
+
+// ─── RADAR ──────────────────────────────────────────────────────
+function renderRadar() {
+  const {a,b} = currentMatchup;
+  const ctx = document.getElementById('radarC').getContext('2d');
+  if (radarChart) { radarChart.destroy(); radarChart = null; }
+  radarChart = new Chart(ctx, {
+    type:'radar',
+    data:{
+      labels: Object.keys(a.metrics),
+      datasets:[
+        {label:a.country+' ('+a.ship+')', data:Object.values(a.metrics), borderColor:a.color, backgroundColor:a.color+'22', borderWidth:2, pointBackgroundColor:a.color, pointRadius:4},
+        {label:b.country+' ('+b.ship+')', data:Object.values(b.metrics), borderColor:b.color, backgroundColor:b.color+'18', borderWidth:2, pointBackgroundColor:b.color, pointRadius:4}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#c8e8f0',font:{family:'Rajdhani',size:12},boxWidth:12}}},
+      scales:{r:{min:0,max:100,ticks:{color:'#c8e8f0',backdropColor:'transparent',font:{size:9},stepSize:25},grid:{color:'rgba(0,229,255,0.1)'},angleLines:{color:'rgba(0,229,255,0.08)'},pointLabels:{color:'#00e5ff',font:{family:'Rajdhani',size:11,weight:'600'}}}}
+    }
+  });
+}
+
+// ─── TECH TAB ───────────────────────────────────────────────────
+const TECH_DATA = {
+  India:[['BrahMos Cruise Missile','MODERN',96],['AESA Radar System','MODERN',94],['INS Arihant (Nuclear)','MODERN',91],['INS Vikrant Carrier','MODERN',88],['Sea King Helicopter','LEGACY',52],['Petya-class Frigate','LEGACY',38]],
+  Pakistan:[['Type 054A/P Frigate','MODERN',82],['Harba Cruise Missile','MODERN',79],['PNS Babur Destroyer','LEGACY',55],['Agosta 90B Sub','LEGACY',61],['Mirage-III Strike','LEGACY',44],['Lynx Helicopter','LEGACY',41]],
+  China:[['Type 055 Destroyer','MODERN',96],['DF-21D Missile','MODERN',94],['Type 003 Carrier','MODERN',92],['J-15 Naval Fighter','MODERN',88],['Type 039 Sub','MODERN',79],['Type 052D Destroyer','MODERN',85]],
+  USA:[['Gerald R. Ford CVN','MODERN',99],['Arleigh Burke DDG','MODERN',97],['Tomahawk Missile','MODERN',96],['F-18 Super Hornet','MODERN',94],['Virginia Sub (SSN)','MODERN',98],['Zumwalt Destroyer','MODERN',91]]
+};
+
+function renderTech() {
+  const {a,b} = currentMatchup;
+  [['tech-a-panel', a], ['tech-b-panel', b]].forEach(([id, side]) => {
+    const data = TECH_DATA[side.country] || [];
+    document.getElementById(id).innerHTML = `
+      <div class="ptitle">${side.flag} ${side.country} Navy</div>
+      ${data.map(([name,type,score]) => `
+        <div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:0.5px solid rgba(0,229,255,0.06)">
+          <span style="font-size:8px;letter-spacing:1px;padding:2px 5px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-weight:700;flex-shrink:0;${type==='MODERN'?'background:rgba(0,255,136,0.12);color:var(--green);border:0.5px solid rgba(0,255,136,0.3)':'background:rgba(255,187,0,0.12);color:var(--amber);border:0.5px solid rgba(255,187,0,0.3)'}">${type}</span>
+          <span style="font-size:12px;flex:1">${name}</span>
+          <span style="font-size:11px;font-family:'Share Tech Mono',monospace;color:var(--hud)">${score}</span>
+        </div>`).join('')}`;
+  });
+
+  if (techChart) { techChart.destroy(); techChart = null; }
+  const allA = (TECH_DATA[a.country]||[]).map(d=>d[0]);
+  const allB = (TECH_DATA[b.country]||[]).map(d=>d[0]);
+  const labels = [...new Set([...allA,...allB])];
+  const mapA = Object.fromEntries((TECH_DATA[a.country]||[]).map(d=>[d[0],d[2]]));
+  const mapB = Object.fromEntries((TECH_DATA[b.country]||[]).map(d=>[d[0],d[2]]));
+  setTimeout(() => {
+    const ctx = document.getElementById('techC');
+    if (!ctx) return;
+    techChart = new Chart(ctx.getContext('2d'), {
+      type:'bar',
+      data:{
+        labels,
+        datasets:[
+          {label:a.country, data:labels.map(l=>mapA[l]||0), backgroundColor:a.color+'bb', borderColor:a.color, borderWidth:1},
+          {label:b.country, data:labels.map(l=>mapB[l]||0), backgroundColor:b.color+'bb', borderColor:b.color, borderWidth:1}
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#c8e8f0',font:{size:11}}}},scales:{x:{ticks:{color:'#c8e8f0',font:{size:9},maxRotation:45},grid:{color:'rgba(0,229,255,0.06)'}},y:{min:0,max:100,ticks:{color:'#c8e8f0',font:{size:9}},grid:{color:'rgba(0,229,255,0.06)'}}}}
+    });
+  }, 100);
+}
+
+// ─── RISK TAB ───────────────────────────────────────────────────
+function initRisk() {
+  if (riskChart) return;
+  const countries=['Pakistan','N.Korea','Iran','Myanmar','China','Bangladesh','Sri Lanka','USA','France','Australia'];
+  const scores=[88,85,82,76,65,48,45,12,10,8];
+  const colors=['#ff3b3b','#ff3b3b','#ff3b3b','#ff3b3b','#ffbb00','#ffbb00','#ffbb00','#00ff88','#00ff88','#00ff88'];
+  const ctx = document.getElementById('riskC').getContext('2d');
+  riskChart = new Chart(ctx, {
+    type:'bar',
+    data:{labels:countries,datasets:[{data:scores,backgroundColor:colors,borderWidth:0}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:0,max:100,ticks:{color:'#c8e8f0',font:{size:9}},grid:{color:'rgba(0,229,255,0.06)'}},y:{ticks:{color:'#c8e8f0',font:{size:10}},grid:{color:'transparent'}}}}
+  });
+  const rdata=[['Pakistan','High','High','red'],['N.Korea','High','Critical','red'],['Iran','Medium','High','red'],['Myanmar','Low','Medium','red'],['China','High','High','yellow'],['Bangladesh','Low','Low','yellow'],['Sri Lanka','Low','Medium','yellow'],['USA','Medium','High','green'],['France','Medium','Medium','green'],['Australia','Medium','Low','green']];
+  const cm={red:'#ff3b3b',yellow:'#ffbb00',green:'#00ff88'};
+  document.getElementById('risk-table').innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:'Share Tech Mono',monospace">
+      <thead><tr style="font-size:9px;letter-spacing:2px;color:var(--hud)">
+        <td style="padding:5px 4px;border-bottom:0.5px solid var(--border)">COUNTRY</td>
+        <td style="padding:5px 4px;border-bottom:0.5px solid var(--border)">NAVAL</td>
+        <td style="padding:5px 4px;border-bottom:0.5px solid var(--border)">MISSILE</td>
+        <td style="padding:5px 4px;border-bottom:0.5px solid var(--border)">ZONE</td>
+      </tr></thead>
+      <tbody>${rdata.map(([c,n,m,z])=>`<tr>
+        <td style="padding:4px;border-bottom:0.5px solid rgba(0,229,255,0.05)">${c}</td>
+        <td style="padding:4px;border-bottom:0.5px solid rgba(0,229,255,0.05);color:${cm[z]}">${n}</td>
+        <td style="padding:4px;border-bottom:0.5px solid rgba(0,229,255,0.05);color:${cm[z]}">${m}</td>
+        <td style="padding:4px;border-bottom:0.5px solid rgba(0,229,255,0.05)"><span style="background:${cm[z]}22;color:${cm[z]};border:0.5px solid ${cm[z]}44;padding:1px 6px;border-radius:3px;font-size:9px">${z.toUpperCase()}</span></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+}
+
+// ─── TAB SWITCHER ───────────────────────────────────────────────
+function showTab(tab) {
+  ['battle','tech','risk'].forEach(t => document.getElementById('tab-'+t).classList.toggle('hidden', t!==tab));
+  document.querySelectorAll('.nb').forEach((b,i)=>b.classList.toggle('on',['battle','tech','risk'][i]===tab));
+  if (tab === 'tech') renderTech();
+  if (tab === 'risk') initRisk();
+}
+
+// ─── CLOCK ──────────────────────────────────────────────────────
+setInterval(() => { document.getElementById('clk').textContent = new Date().toLocaleTimeString('en-IN',{hour12:false})+' IST'; }, 1000);
+
+// ─── INIT ───────────────────────────────────────────────────────
+renderMatchupBtns();
+setBg(currentMatchup);
+renderFleet();
+renderStats();
+renderGauge();
+renderMetrics();
+renderLog();
+setTimeout(renderRadar, 300);
+</script>
